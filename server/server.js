@@ -15,12 +15,13 @@ app.use(bodyParser.json());
 
 app.post('/todos', (req, res) =>{
     var todo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        completed: req.body.completed
     });
 
     todo.save().then((doc) =>{
         res.send(doc);
-    }, (err) =>{
+    }).catch((err) =>{
         res.status(400).send(err);
     });
 });
@@ -28,7 +29,7 @@ app.post('/todos', (req, res) =>{
 app.get('/todos', (req, res) =>{
     Todo.find().then((todos) =>{
         res.send({todos});
-    }, (err) =>{
+    }).catch((err) => {
         res.status(400).send(err);
     });
 });
@@ -45,10 +46,28 @@ app.get('/todos/:id', (req, res) => {
         }
 
         res.send({todo})
-    }, (err) => {
+    }).catch((e) => {
         res.status(400).send(e);
     });
-})
+});
+
+app.delete('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send();
+    }
+
+    Todo.findByIdAndRemove(id).then((todo) => {
+        if(!todo){
+            return res.status(404).send();
+        }
+
+        res.status(200).send(todo);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
+
+});
 
 
 
